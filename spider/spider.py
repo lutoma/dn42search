@@ -150,16 +150,16 @@ class Crawler:
 		if 'location' in response.headers:
 			dest = urljoin(target.url, response.headers['location'])
 			self.queue_url(dest)
-			print('  Redirect')
+			print(f'  Redirect to {dest}')
 			return
 
 		try:
-			length = int(response.headers['content-length'])
+			size = int(response.headers['content-length'])
 		except (KeyError, ValueError):
 			print('  No or invalid content-length')
 			return
 
-		if length > 5242880:
+		if size > 5242880:
 			print('  content-length > 5 MiB, bailing')
 			return
 
@@ -170,8 +170,15 @@ class Crawler:
 		# Transform things like `text/html; charset=utf-8` into just `text/html`
 		effective_content_type = response.headers['content-type'].split(';')[0]
 		if effective_content_type not in MIME_PARSERS:
-			# FIXME Unsupported types should still be added to URL database, just not parsed/requested
-			print(f'  Unsupported content type `{effective_content_type}`')
+			# Skip loading, just add to the index as-is
+			solr.add([{
+				'id': target.url,
+				'url': target.url,
+				'mime': effective_content_type,
+				'size': size,
+# 				'headers': dict(response.headers),
+			}])
+
 			return
 
 		# Now that we have checked the headers, load the file for real
@@ -184,35 +191,20 @@ class Crawler:
 		if not parser.parse(response.text):
 			return
 
+		absolute_links = []
 		for link in parser.get_links():
 			dest = urljoin(target.url, link)
+			absolute_links.append(dest)
 			self.queue_url(dest)
 
-		try:
-			host = Host.objects.get_or_create(name=target.up.hostname,
-				defaults={'last_crawl': timezone.now()})[0]
-
-			response.raw.decode_content = True
-			text = parser.get_text()
-			title = parser.get_title()
-			excerpt = parser.get_excerpt()
-
-			url, _ = host.urls.update_or_create(url=target.url, defaults={
-				'last_crawl': timezone.now(),
-				'headers': dict(response.headers),
-				'title': title,
-				'excerpt': excerpt,
-				'text': text,
-				'content': response.raw.read()
-			})
-		except Exception as e:
-			print('  Could not store result', e)
-			return
-
 		solr.add([{
-			'id': url.id,
-			'title': title,
-			'excerpt': excerpt,
-			'text': text,
-			'url': target.url
+			'id': target.url,
+			'url': target.url,
+			'title': parser.get_title(),
+			'excerpt': parser.get_excerpt(),
+			'text': parser.get_text(),
+			'mime': effective_content_type,
+			'server': response.headers.get('server'),
+			'size': size,
+			'links': absolute_links,
 		}])

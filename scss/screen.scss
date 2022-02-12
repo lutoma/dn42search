@@ -1,4 +1,3 @@
-@import 'bootstrap/scss/bootstrap';
 @import 'fira';
 
 $fa-font-path: '../fonts';
@@ -7,9 +6,11 @@ $fa-font-path: '../fonts';
 @import '@fortawesome/fontawesome-pro/scss/thin';
 @import '@fortawesome/fontawesome-pro/scss/regular';
 
+$font-family-sans-serif: 'Fira Sans', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
+@import 'bootstrap/scss/bootstrap';
+
 body {
 	padding: 2rem 0;
-	font-family: 'Fira Sans', 'Open Sans', sans-serif;
 }
 
 a {
@@ -36,12 +37,14 @@ footer {
 		font-weight: 200;
 		font-size: 5rem;
 		margin-top: 10rem;
-		margin-bottom: 4rem;
+		margin-bottom: 1rem;
 	}
 
 	form {
 		display: flex;
 		flex-direction: row;
+		margin-top: 4rem;
+		margin-bottom: .5rem;
 
 		input {
 			max-width: 100vw;
@@ -57,7 +60,13 @@ footer {
 }
 
 .search-results {
-	padding-top: 3rem;
+	h1 {
+		font-weight: 200;
+		font-size: 2rem;
+		margin-top: 1rem;
+		margin-bottom: 1rem;
+		color: $body-color;
+	}
 
 	form {
 		display: flex;
@@ -89,6 +98,10 @@ footer {
 			h5 {
 				margin-top: .3rem;
 				margin-bottom: .3rem;
+			}
+
+			.excerpt {
+				font-size: 0.95rem;
 			}
 		}
 	}

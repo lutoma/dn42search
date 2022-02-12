@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect
 from django.core.paginator import Paginator
 from searchdb.models import URL
 import pysolr
+import requests
 
 solr = pysolr.Solr('http://localhost:8983/solr/dn42search', always_commit=True)
 
@@ -34,12 +35,19 @@ class SearchResultsView(TemplateView):
 		context = super().get_context_data(**kwargs)
 		context['query'] = self.query
 
-		try:
-			solr_result = solr.search(self.query)
-		except pysolr.SolrError as e:
-			context['error'] = e
+		http_response = requests.get('http://localhost:8983/solr/dn42search/select', params={
+			'q': self.query,
+			'fl': 'id,title,excerpt,url,size,last_indexed,mime'
+		})
+
+		data = http_response.json()
+
+		if 'error' in data:
+			context['error'] = data['error']['msg']
 			return context
 
-		context['results'] = solr_result.docs
-		context['results_count'] = solr_result.hits
+		response = data['response']
+
+		context['results'] = response['docs']
+		context['results_count'] = response['numFound']
 		return context

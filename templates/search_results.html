@@ -4,6 +4,8 @@
 
 {% block content %}
 	<div class="container search-results">
+		<a href="/"><h1>search.dn42</h1></a>
+
 		<form type="GET" action="/search">
 			<input type="text" name="q" placeholder="Search query" value="{{ query }}" class="form-control" id="query">
 			<button class="btn btn-primary" type="submit">Search</button>
@@ -16,9 +18,15 @@
 		<div class="results">
 			{% for result in results %}
 				<div class="result">
-					<a href="{{ result.url.0 }}" rel="nofollow noopener" target="_blank" class="text-muted small">{{ result.url.0 }}</a>
-					<h5><a href="{{ result.url.0 }}" rel="nofollow noopener" target="_blank">{{ result.title.0 }}</a></h5>
-					{% if result.excerpt %}<small>{{ result.excerpt.0 }}</small>{% endif %}
+					<small class="text-muted"><a href="{{ result.url }}" rel="nofollow noopener" target="_blank" class="text-muted">{{ result.url }}</a> - Size: {{ result.size }} / Last indexed: {{ result.last_indexed }}</small>
+					<h5><a href="{{ result.url }}" rel="nofollow noopener" target="_blank">
+						{% if result.title %}
+							{{ result.title }}
+						{% else %}
+							<em>No page title</em>
+						{% endif %}
+					</a></h5>
+					{% if result.excerpt %}<p class="excerpt">{{ result.excerpt }}</p>{% endif %}
 				</div>
 			{% endfor %}
 		</div>
