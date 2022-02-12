@@ -164,6 +164,9 @@ class Crawler:
 			'mime': effective_content_type,
 			'size': size,
 			'server': response.headers.get('server'),
+
+			# Will be updated below if a better title is found
+			'title': target.url.rsplit('/', maxsplit=1)[-1]
 		}
 
 		if not skip_download:
@@ -183,11 +186,13 @@ class Crawler:
 				absolute_links.append(dest)
 				self.queue_url(dest)
 
-			data.update({
+			new_data = {
 				'title': parser.get_title(),
 				'excerpt': parser.get_excerpt(),
 				'text': parser.get_text(),
 				'links': absolute_links,
-			})
+			}
+
+			data.update((k, v) for k, v in new_data.items() if v is not None)
 
 		solr.add([data])
