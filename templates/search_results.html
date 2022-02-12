@@ -18,7 +18,8 @@
 		<div class="results">
 			{% for result in results %}
 				<div class="result">
-					<small class="text-muted"><a href="{{ result.url }}" rel="nofollow noopener" target="_blank" class="text-muted">{{ result.url }}</a> - Size: {{ result.size }} / Last indexed: {{ result.last_indexed }}</small>
+					<small class="text-muted"><a href="{{ result.url }}" rel="nofollow noopener" target="_blank" class="text-muted">{{ result.url }}</a></small>
+					<!--<small class="text-muted"><a href="{{ result.url }}" rel="nofollow noopener" target="_blank" class="text-muted">{{ result.url }}</a> - Size: {{ result.size }} / Last indexed: {{ result.last_indexed }}</small>-->
 					<h5><a href="{{ result.url }}" rel="nofollow noopener" target="_blank">
 						{% if result.title %}
 							{{ result.title }}
