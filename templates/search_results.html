@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+	<div class="container search-results">
+		<form type="GET" action="/search">
+			<input type="text" name="q" placeholder="Search query" value="{{ query }}" class="form-control" id="query">
+			<button class="btn btn-primary" type="submit">Search</button>
+		</form>
+
+		{% if error %}<p class="mt-3">{{ error }}</p>{% endif %}
+
+		<p class="small results-count">{{ results_count }} results</p>
+
+		<div class="results">
+			{% for result in results %}
+				<div class="result">
+					<a href="{{ result.url.0 }}" rel="nofollow noopener" target="_blank" class="text-muted small">{{ result.url.0 }}</a>
+					<h5><a href="{{ result.url.0 }}" rel="nofollow noopener" target="_blank">{{ result.title.0 }}</a></h5>
+					{% if result.excerpt %}<small>{{ result.excerpt.0 }}</small>{% endif %}
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+{% endblock %}

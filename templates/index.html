@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+	<div class="container index">
+		<h1>search.dn42</h1>
+		<p class="small">Search {{ index_size }} indexed documents on dn42 sites</p>
+
+		<form type="GET" action="/search">
+			<div class="form-floating">
+				<input type="text" name="q" placeholder="Search query" class="form-control" id="query">
+				<label for="query"><i class="fa-regular fa-magnifying-glass"></i> {% trans 'Search query' %}</label>
+			</div>
+
+			<button class="btn btn-primary" type="submit">Search</button>
+		</form>
+	</div>
+{% endblock %}

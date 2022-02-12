@@ -1,0 +1,27 @@
+{% load i18n %}
+{% load static %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_available_languages as LANGUAGES %}
+
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}" class="h-100">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="{% static 'css/screen.css' %}" rel='stylesheet' type='text/css'>
+		<title>{% block title %}{% trans 'DN42 search' %}{% endblock %}</title>
+	</head>
+	<body class="pt-0 d-flex flex-column h-100">
+		<main class="flex-shrink-0">
+			{% block content %}
+			{% endblock %}
+		</main>
+
+		<footer class="footer mt-auto pt-5 pb-4">
+			<div class="container">
+				<span class="text-muted small"><a href="https://lutoma.org/contact">{% trans 'Contact' %}</a> / <a href="https://github.com/lutoma/autopeer">{% trans 'Source code' %}</a> / <a href="https://weblate.ohai.su/projects/autopeer/django/">{% trans 'Help translate this page' %}</a>
+			</div>
+		</footer>
+		<script src="{% static 'js/bootstrap.bundle.min.js' %}" crossorigin="anonymous"></script>
+	</body>
+</html>
