@@ -7,14 +7,13 @@ authors = ["Lukas Martini <hello@lutoma.org>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 requests = "^2.27.1"
-Django = "^4.0.2"
-django-q = "^1.3.9"
 beautifulsoup4 = "^4.10.0"
-psycopg2 = "^2.9.3"
 robotspy = "^0.7.0"
 requests-toolbelt = "^0.9.1"
 boilerpy3 = "^1.0.5"
 pysolr = "^3.9.0"
+fastapi = "^0.73.0"
+uvicorn = {extras = ["standard"], version = "^0.17.5"}
 
 [tool.poetry.dev-dependencies]
 

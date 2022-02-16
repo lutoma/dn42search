@@ -49,8 +49,8 @@ class Crawler:
 	def __init__(self):
 		self.session = requests.Session()
 		self.session.verify = False
-		self.session.mount('http://', SourceAddressAdapter('172.23.13.13'))
-		self.session.mount('https://', SourceAddressAdapter('172.23.13.13'))
+		self.session.mount('http://', SourceAddressAdapter('172.23.13.14'))
+		self.session.mount('https://', SourceAddressAdapter('172.23.13.14'))
 
 		self.session.cookies = ForgetfulCookieJar()
 		self.session.headers.update({
@@ -196,3 +196,10 @@ class Crawler:
 			data.update((k, v) for k, v in new_data.items() if v is not None)
 
 		solr.add([data])
+
+if __name__ == '__main__':
+	import sys
+	c = Crawler()
+	c.queue_url(sys.argv[1])
+	c.crawl()
+
