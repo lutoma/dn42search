@@ -13,7 +13,7 @@
 
 			<div class="results">
 				<div class="result" v-for="result of data.results">
-					<small class="text-muted"><a :href="result.url" rel="nofollow noopener" target="_blank" class="text-muted">{{ result.url }}</a></small>
+					<small class="text-muted"><a :href="result.url" rel="nofollow noopener" target="_blank" class="text-muted">{{ prettyPath(result.url) }}</a></small>
 					<!--<small class="text-muted"><a href="{{ result.url }}" rel="nofollow noopener" target="_blank" class="text-muted">{{ result.url }}</a> - Size: {{ result.size }} / Last indexed: {{ result.last_indexed }}</small>-->
 					<h5><a :href="result.url" rel="nofollow noopener" target="_blank">
 						<template v-if="result.title">{{ result.title }}</template>
@@ -38,6 +38,18 @@ export default {
 		return {
 			'data': [],
 			'query': 'lutoma'
+		}
+	},
+
+	methods: {
+		prettyPath(_url) {
+			const url = new URL(_url)
+			const path = url.pathname.split('/').filter(n => n)
+			if(!path.length) {
+				return url.origin
+			} else {
+				return `${url.origin} › ${path.join(' › ')}`
+			}
 		}
 	},
 
