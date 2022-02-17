@@ -22,7 +22,8 @@ export default {
 </script>
 
 <script setup>
-const { data } = await useAsyncData('index_size', () => $fetch('http://localhost:8000'), { server: false })
+const config = useRuntimeConfig()
+const { data } = await useAsyncData('index_size', () => $fetch(config.API_BASE), { server: false })
 </script>
 
 <style lang="scss">
