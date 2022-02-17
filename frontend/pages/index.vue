@@ -4,20 +4,56 @@
 		<p class="small" v-if="data">Search {{ data.index_size }} indexed documents on dn42 sites</p>
 
 		<div>
-			<form type="GET" action="/search">
-				<div class="form-floating">
-					<input type="text" name="q" placeholder="Search query" class="form-control" id="query" autofocus>
-					<label for="query"><i class="fa-regular fa-magnifying-glass"></i> Search query</label>
-				</div>
-
-				<button class="btn btn-primary" type="submit">Search</button>
-			</form>
+			<SearchForm autofocus />
 
 			<p class="small">Try <router-link to='/search?q=url%3Alg.*+OR+title%3A"*looking+glass*"'><code>url:lg.* OR title:"*looking glass*"</code></router-link></p>
 		</div>
 	</div>
 </template>
 
+<script>
+import SearchForm from '~/components/SearchForm.vue'
+
+export default {
+	components: {
+		SearchForm
+	}
+}
+</script>
+
 <script setup>
 const { data } = await useAsyncData('index_size', () => $fetch('http://localhost:8000'), { server: false })
 </script>
+
+<style lang="scss">
+.index {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	h1 {
+		font-weight: 200;
+		font-size: 5rem;
+		margin-top: 10rem;
+		margin-bottom: 1rem;
+	}
+
+	form {
+		display: flex;
+		flex-direction: row;
+		margin-top: 4rem;
+		margin-bottom: .5rem;
+
+		input {
+			max-width: 100vw;
+			width: 30rem;
+		}
+
+		button {
+			margin-left: 1rem;
+			padding-left: 1.5rem;
+			padding-right: 1.5rem;
+		}
+	}
+}
+</style>
