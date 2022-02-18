@@ -89,6 +89,12 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const router = useRouter()
 
+if(route.query.q) {
+	useMeta({ title: `${route.query.q} — DN42 search` })
+} else {
+	useMeta({ title: `DN42 search` })
+}
+
 const query = ref(route.query.q || '')
 const page = ref(route.query.page ? route.query.page : 1)
 

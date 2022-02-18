@@ -22,6 +22,8 @@ export default {
 </script>
 
 <script setup>
+useMeta({ title: 'DN42 search' })
+
 const config = useRuntimeConfig()
 const { data } = await useAsyncData('index_size', () => $fetch(config.API_BASE), { server: false })
 </script>
@@ -42,6 +44,8 @@ const { data } = await useAsyncData('index_size', () => $fetch(config.API_BASE),
 	.search-form {
 		margin-top: 4rem;
 		margin-bottom: .5rem;
+		width: 700px;
+		max-width: 95vw;
 	}
 }
 </style>
