@@ -39,22 +39,9 @@ const { data } = await useAsyncData('index_size', () => $fetch(config.API_BASE),
 		margin-bottom: 1rem;
 	}
 
-	form {
-		display: flex;
-		flex-direction: row;
+	.search-form {
 		margin-top: 4rem;
 		margin-bottom: .5rem;
-
-		input {
-			max-width: 100vw;
-			width: 30rem;
-		}
-
-		button {
-			margin-left: 1rem;
-			padding-left: 1.5rem;
-			padding-right: 1.5rem;
-		}
 	}
 }
 </style>

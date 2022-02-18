@@ -32,6 +32,7 @@ $font-family-sans-serif: 'Fira Sans', system-ui, -apple-system, "Segoe UI", Robo
 @import 'bootstrap/scss/grid';
 @import 'bootstrap/scss/forms';
 @import 'bootstrap/scss/buttons';
+@import 'bootstrap/scss/pagination';
 @import 'bootstrap/scss/helpers';
 @import 'bootstrap/scss/utilities/api';
 

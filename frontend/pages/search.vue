@@ -8,8 +8,8 @@
 
 		<p class="mt-3" v-if="data && data.error">{{ data.error }}</p>
 
-		<template v-if="data && !data.error">
-			<p class="small results-count">{{ data.count }} results</p>
+		<div class="results-main" v-if="data && !data.error">
+			<p class="small">Results {{ (page-1) * 15 + 1 }} to {{ Math.min((page-1) * 15 + 16, data.count) }} of {{ data.count }}</p>
 
 			<div class="results">
 				<div class="result" v-for="result of data.results">
@@ -22,7 +22,21 @@
 					<p class="excerpt" v-if="result.excerpt">{{ result.excerpt }}</p>
 				</div>
 			</div>
-		</template>
+
+			<nav v-if="data.pages > 1" aria-label="Search results pagination">
+				<ul class="pagination justify-content-center">
+					<li v-if="page != 1" class="page-item">
+						<a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+					</li>
+					<li v-for="(n, index) in data.pages" :key="index" :class="{ 'page-item': true, disabled: page == n }">
+						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: n } }">{{ n }}</router-link>
+					</li>
+					<li v-if="page < data.pages" class="page-item">
+						<a class="page-link" href="#">Next</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
 	</div>
 </template>
 
@@ -37,14 +51,13 @@ export default {
 	data() {
 		return {
 			'data': [],
-			'query': 'lutoma'
+			'page': 1
 		}
 	},
 
 	methods: {
 		prettyPath(_url) {
 			const url = new URL(_url)
-			console.log(url)
 			let path = url.pathname.split('/').filter(n => n)
 			if(!path.length) {
 				return url.origin
@@ -59,9 +72,10 @@ export default {
 		this.$watch(
 			() => this.$route.query, (toQuery, previousQuery) => {
 				this.data = null
+				this.page = toQuery.page || 1
 
 				const config = useRuntimeConfig()
-				$fetch(`${config.API_BASE}/search/?q=${toQuery.q}`).then((data) => {
+				$fetch(`${config.API_BASE}/search/?q=${toQuery.q}&page=${toQuery.page || 1}`).then((data) => {
 					this.data = data
 				})
 			}
@@ -75,10 +89,10 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const router = useRouter()
 
-const _query = route.query.q ? route.query.q : ''
-const query = ref(_query)
+const query = ref(route.query.q || '')
+const page = ref(route.query.page ? route.query.page : 1)
 
-const { data } = await useAsyncData('searchResults', () => $fetch(`${config.API_BASE}/search/?q=${_query}`), { server: false })
+const { data } = await useAsyncData('searchResults', () => $fetch(`${config.API_BASE}/search/?q=${route.query.q }&page=${route.query.page || 1}`), { server: false })
 </script>
 
 <style lang="scss">
@@ -94,40 +108,28 @@ const { data } = await useAsyncData('searchResults', () => $fetch(`${config.API_
 		color: $body-color;
 	}
 
-	form {
-		display: flex;
-		flex-direction: row;
-
-		input {
-			max-width: 100vw;
-			width: 30rem;
-		}
-
-		button {
-			margin-left: 1rem;
-			padding-left: 1.5rem;
-			padding-right: 1.5rem;
-		}
+	.search-form {
+		max-width: 700px;
 	}
 
-	.results-count {
+	.results-main {
+		max-width: 700px;
 		margin-top: .5rem;
-	}
 
-	.results {
-		 max-width: 700px;
-		 margin-top: 2rem;
+		.results {
+			 margin-top: 2rem;
 
-		 .result {
-		 	margin-bottom: 2rem;
+			 .result {
+			 	margin-bottom: 2rem;
 
-			h5 {
-				margin-top: .3rem;
-				margin-bottom: .3rem;
-			}
+				h5 {
+					margin-top: .3rem;
+					margin-bottom: .3rem;
+				}
 
-			.excerpt {
-				font-size: 0.95rem;
+				.excerpt {
+					font-size: 0.95rem;
+				}
 			}
 		}
 	}

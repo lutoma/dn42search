@@ -29,6 +29,23 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
+.search-form {
+	display: flex;
+	flex-direction: row;
 
+	.form-floating {
+		flex-grow: 1;
+
+		input {
+			width: 100%;
+		}
+	}
+
+	button {
+		margin-left: 1rem;
+		padding-left: 1.5rem;
+		padding-right: 1.5rem;
+	}
+}
 </style>
