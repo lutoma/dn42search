@@ -7,6 +7,7 @@ import robots
 import pysolr
 import redis
 import yaml
+from sdnotify import SystemdNotifier
 
 from parsers import MIME_PARSERS
 
@@ -22,6 +23,8 @@ class Crawler:
 	def __init__(self):
 		with open('config.yml') as fp:
 			self.config = yaml.safe_load(fp)
+
+		self.sdnotify = SystemdNotifier()
 
 		self.solr = pysolr.Solr(self.config['solr_endpoint'], always_commit=True)
 		self.redis = redis.Redis(
@@ -182,6 +185,8 @@ class Crawler:
 		self.solr.add([data])
 
 	def run(self):
+		self.sdnotify.notify("READY=1")
+
 		while True:
 			# Check for old known URLs that are due for re-crawling
 			ts = int(time()) - self.config.get('recrawl_after', 86400)

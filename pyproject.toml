@@ -16,6 +16,7 @@ fastapi = "^0.73.0"
 uvicorn = {extras = ["standard"], version = "^0.17.5"}
 redis = "^4.1.4"
 PyYAML = "^6.0"
+sdnotify = "^0.3.2"
 
 [tool.poetry.dev-dependencies]
 
