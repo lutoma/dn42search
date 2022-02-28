@@ -75,7 +75,7 @@ class Crawler:
 				timeout=(3.05, 10), *args, **kwargs)
 			response.raise_for_status()
 			return response
-		except requests.exceptions.RequestException:
+		except Exception:
 			return None
 
 	def get_robots_txt(self, url):
