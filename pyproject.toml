@@ -14,6 +14,7 @@ boilerpy3 = "^1.0.5"
 pysolr = "^3.9.0"
 fastapi = "^0.73.0"
 uvicorn = {extras = ["standard"], version = "^0.17.5"}
+redis = "^4.1.4"
 
 [tool.poetry.dev-dependencies]
 

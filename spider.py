@@ -2,17 +2,17 @@ import requests
 from requests_toolbelt.adapters.source import SourceAddressAdapter
 from requests_toolbelt.cookies.forgetful import ForgetfulCookieJar
 from urllib.parse import urljoin, urlparse, urlunparse
+from time import sleep, time
 import robots
 import pysolr
+import redis
 
-from .parsers import MIME_PARSERS
+from parsers import MIME_PARSERS
 
 import urllib3
 import socket
 urllib3.disable_warnings()
 socket.setdefaulttimeout(3.05)
-
-solr = pysolr.Solr('http://localhost:8983/solr/dn42search', always_commit=True)
 
 BLACKLIST_DOMAINS = {
 	'ca.dn42',
@@ -21,32 +21,13 @@ BLACKLIST_DOMAINS = {
 }
 
 
-class CrawlTarget:
-	url = None
-	up = None
-
-	def __init__(self, url, up):
-		self.url = url
-		self.up = up
-
-	def __str__(self):
-		return self.url
-
-	def __eq__(self, other):
-		if other == self.url:
-			return True
-		return False
-
-	def __hash__(self):
-		return hash(self.url)
-
-
 class Crawler:
-	queue = set()
-	crawled = set()
 	robots_txt_map = dict()
 
 	def __init__(self):
+		self.solr = pysolr.Solr('http://localhost:8983/solr/dn42search', always_commit=True)
+		self.redis = redis.Redis(host='localhost', port=6379, db=0)
+
 		self.session = requests.Session()
 		self.session.verify = False
 		self.session.mount('http://', SourceAddressAdapter('172.23.13.14'))
@@ -65,7 +46,7 @@ class Crawler:
 		up = up._replace(fragment=None)
 		url = up.geturl()
 
-		if url in self.crawled or url in self.queue:
+		if self.redis.sismember('queue', url) or self.redis.zscore('known', url):
 			return
 
 		if up.scheme not in {'http', 'https'}:
@@ -80,12 +61,7 @@ class Crawler:
 			return
 
 		print(f'  -> New URL queued: {url}')
-		target = CrawlTarget(url, up)
-		self.queue.add(target)
-
-	def crawl(self):
-		while self.queue:
-			self.crawl_url(self.queue.pop())
+		self.redis.sadd('queue', url)
 
 	def fetch_url(self, url, method='get', *args, **kwargs):
 		try:
@@ -96,13 +72,18 @@ class Crawler:
 		except requests.exceptions.RequestException:
 			return None
 
-	def get_robots_txt(self, target):
-		robots_txt_url = urlunparse((target.up.scheme, target.up.netloc, 'robots.txt', None, None, None))
+	def get_robots_txt(self, url):
+		up = urlparse(url)
+		robots_txt_url = urlunparse((up.scheme, up.netloc, 'robots.txt', None, None, None))
 
+		# Check primary object cache
+		# It migth be worth caching the text response in redis later on if we
+		# end up restarting the crawling process frequently or if there will be
+		# multiple concurrent ones
 		if robots_txt_url in self.robots_txt_map:
 			return self.robots_txt_map[robots_txt_url]
 
-		print(f'No cache for {robots_txt_url}, fetching')
+		print(f'  No cache for {robots_txt_url}, fetching')
 
 		response = self.fetch_url(robots_txt_url)
 		if not response or response.status_code != 200:
@@ -113,16 +94,16 @@ class Crawler:
 		self.robots_txt_map[robots_txt_url] = rp
 		return rp
 
-	def crawl_url(self, target):
-		print(f'Crawling {target}')
+	def crawl_url(self, url):
+		print(f'Crawling {url}')
 
-		robotstxt = self.get_robots_txt(target)
-		if robotstxt and not robotstxt.can_fetch('dn42search', target.url):
+		robotstxt = self.get_robots_txt(url)
+		if robotstxt and not robotstxt.can_fetch('dn42search', url):
 			print('  Denied by robots.txt')
 			return
 
-		response = self.fetch_url(target.url, method='head')
-		self.crawled.add(target.url)
+		response = self.fetch_url(url, method='head')
+		self.redis.zadd('known', {url: int(time())})
 
 		if not response:
 			print('  No response to HEAD request')
@@ -131,7 +112,7 @@ class Crawler:
 		# FIXME response error handling
 		# FIXME Check status code
 		if 'location' in response.headers:
-			dest = urljoin(target.url, response.headers['location'])
+			dest = urljoin(url, response.headers['location'])
 			self.queue_url(dest)
 			print(f'  Redirect to {dest}')
 			return
@@ -159,19 +140,19 @@ class Crawler:
 				skip_download = True
 
 		data = {
-			'id': target.url,
-			'url': target.url,
+			'id': url,
+			'url': url,
 			'mime': effective_content_type,
 			'size': size,
 			'server': response.headers.get('server'),
 
 			# Will be updated below if a better title is found
-			'title': target.url.rsplit('/', maxsplit=1)[-1]
+			'title': url.rsplit('/', maxsplit=1)[-1]
 		}
 
 		if not skip_download:
 			# Now that we have checked the headers, load the file for real
-			response = self.fetch_url(target.url, stream=True)
+			response = self.fetch_url(url, stream=True)
 			if not response:
 				print('  No response to GET request')
 				return
@@ -182,7 +163,7 @@ class Crawler:
 
 			absolute_links = []
 			for link in parser.get_links():
-				dest = urljoin(target.url, link)
+				dest = urljoin(url, link)
 				absolute_links.append(dest)
 				self.queue_url(dest)
 
@@ -195,11 +176,33 @@ class Crawler:
 
 			data.update((k, v) for k, v in new_data.items() if v is not None)
 
-		solr.add([data])
+		self.solr.add([data])
+
+	def run(self):
+		while True:
+			# Check for old known URLs that are due for re-crawling
+			ts = int(time()) - 86400
+			recrawl = self.redis.zrange('known', 0, ts, byscore=True)
+			if recrawl:
+				print('Due for recrawling:', recrawl)
+				self.redis.sadd('queue', *recrawl)
+				self.redis.zremrangebyscore('known', 0, ts)
+
+			# Retrieve URL to crawl
+			target = self.redis.spop('queue')
+			if not target:
+				sleep(5)
+				continue
+
+			target = target.decode('utf-8')
+			self.crawl_url(target)
+
 
 if __name__ == '__main__':
 	import sys
 	c = Crawler()
-	c.queue_url(sys.argv[1])
-	c.crawl()
 
+	if len(sys.argv) > 1:
+		c.queue_url(sys.argv[1])
+
+	c.run()
