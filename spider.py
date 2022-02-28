@@ -78,8 +78,7 @@ class Crawler:
 		except Exception:
 			return None
 
-	def get_robots_txt(self, url):
-		up = urlparse(url)
+	def get_robots_txt(self, up):
 		robots_txt_url = urlunparse((up.scheme, up.netloc, 'robots.txt', None, None, None))
 
 		# Check primary object cache
@@ -101,9 +100,15 @@ class Crawler:
 		return rp
 
 	def crawl_url(self, url):
+		up = urlparse(url)
+
+		# Check again in case host was added to blacklist after URL was already queued
+		if up.hostname in self.config.get('blacklist_domains', []):
+			return
+
 		print(f'Crawling {url}')
 
-		robotstxt = self.get_robots_txt(url)
+		robotstxt = self.get_robots_txt(up)
 		if robotstxt and not robotstxt.can_fetch('dn42search', url):
 			print('  Denied by robots.txt')
 			return
