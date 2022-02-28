@@ -20,6 +20,7 @@ def read_root():
 @app.get("/search/")
 def read_search(q: str, page: Optional[int] = 1):
 		http_response = requests.get('http://search.dn42:8983/solr/dn42search/select', params={
+			'defType': 'edismax',
 			'q': q,
 			'fl': 'id,title,excerpt,url,size,last_indexed,mime',
 			'rows': 15,
