@@ -6,6 +6,7 @@ from time import sleep, time
 import robots
 import pysolr
 import redis
+import yaml
 
 from parsers import MIME_PARSERS
 
@@ -14,28 +15,30 @@ import socket
 urllib3.disable_warnings()
 socket.setdefaulttimeout(3.05)
 
-BLACKLIST_DOMAINS = {
-	'ca.dn42',
-	'wiki.burble.dn42',
-	'internal.dn42',
-}
-
 
 class Crawler:
 	robots_txt_map = dict()
 
 	def __init__(self):
-		self.solr = pysolr.Solr('http://localhost:8983/solr/dn42search', always_commit=True)
-		self.redis = redis.Redis(host='localhost', port=6379, db=0)
+		with open('config.yml') as fp:
+			self.config = yaml.safe_load(fp)
+
+		self.solr = pysolr.Solr(self.config['solr_endpoint'], always_commit=True)
+		self.redis = redis.Redis(
+			host=self.config.get('redis_host', 'localhost'),
+			port=self.config.get('redis_port', 6379),
+			db=self.config.get('redis_db', 0))
 
 		self.session = requests.Session()
 		self.session.verify = False
-		self.session.mount('http://', SourceAddressAdapter('172.23.13.14'))
-		self.session.mount('https://', SourceAddressAdapter('172.23.13.14'))
+
+		source_ip = self.config.get('crawl_source_ip', '0.0.0.0')
+		self.session.mount('http://', SourceAddressAdapter(source_ip))
+		self.session.mount('https://', SourceAddressAdapter(source_ip))
 
 		self.session.cookies = ForgetfulCookieJar()
 		self.session.headers.update({
-			'User-Agent': 'dn42search spider (+https://search.dn42)',
+			'User-Agent': self.config['user_agent'],
 			'Accept-Encoding': None
 		})
 
@@ -52,7 +55,7 @@ class Crawler:
 		if up.scheme not in {'http', 'https'}:
 			return
 
-		if up.hostname in BLACKLIST_DOMAINS:
+		if up.hostname in self.config.get('blacklist_domains', []):
 			return
 
 		# FIXME Maybe add support for DN42 ip addresses later
@@ -121,8 +124,8 @@ class Crawler:
 
 		try:
 			size = int(response.headers['content-length'])
-			if size > 5242880:
-				print('  content-length > 5 MiB')
+			if size > self.config.get('max_response_size', 5242880):
+				print('  content-length too large')
 				skip_download = True
 		except (KeyError, ValueError):
 			print('  No or invalid content-length')
@@ -181,7 +184,7 @@ class Crawler:
 	def run(self):
 		while True:
 			# Check for old known URLs that are due for re-crawling
-			ts = int(time()) - 86400
+			ts = int(time()) - self.config.get('recrawl_after', 86400)
 			recrawl = self.redis.zrange('known', 0, ts, byscore=True)
 			if recrawl:
 				print('Due for recrawling:', recrawl)

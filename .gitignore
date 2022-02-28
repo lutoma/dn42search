@@ -8,3 +8,5 @@ static/js
 static/fonts
 static/css
 solrdata
+config.prod.yml
+config.yml

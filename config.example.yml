@@ -1,0 +1,9 @@
+---
+redis_host: localhost
+redis_db: 0
+solr_endpoint: http://localhost:8983/solr/dn42search
+crawl_source_ip: '0.0.0.0'
+user_agent: 'some spider (+https://example.org)'
+max_response_size: 5242880
+recrawl_after: 86400
+blacklist_domains: []
