@@ -8,7 +8,7 @@
 
 		<footer class="footer mt-auto pt-5 pb-4">
 			<div class="container">
-				<span class="text-muted small"><a href="https://lutoma.org/contact">Contact</a></span>
+				<span class="text-muted small"><a href="https://lutoma.org/contact">Contact</a> / <a href="https://github.com/lutoma/dn42search">Source code</a></span>
 			</div>
 		</footer>
 	</div>
