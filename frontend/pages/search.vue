@@ -26,13 +26,13 @@
 			<nav v-if="data.pages > 1" aria-label="Search results pagination">
 				<ul class="pagination justify-content-center">
 					<li v-if="page != 1" class="page-item">
-						<a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: page-1 } }">Previous</router-link>
 					</li>
 					<li v-for="(n, index) in data.pages" :key="index" :class="{ 'page-item': true, disabled: page == n }">
 						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: n } }">{{ n }}</router-link>
 					</li>
 					<li v-if="page < data.pages" class="page-item">
-						<a class="page-link" href="#">Next</a>
+						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: page+1 } }">Next</router-link>
 					</li>
 				</ul>
 			</nav>
@@ -72,7 +72,8 @@ export default {
 		this.$watch(
 			() => this.$route.query, (toQuery, previousQuery) => {
 				this.data = null
-				this.page = toQuery.page || 1
+				this.page = Number(toQuery.page) || 1
+				this.query = toQuery.q
 
 				const config = useRuntimeConfig()
 				$fetch(`${config.API_BASE}/search/?q=${toQuery.q}&page=${toQuery.page || 1}`).then((data) => {
@@ -96,7 +97,7 @@ if(route.query.q) {
 }
 
 const query = ref(route.query.q || '')
-const page = ref(route.query.page ? route.query.page : 1)
+const page = ref(route.query.page ? Number(route.query.page) : 1)
 
 const { data } = await useAsyncData('searchResults', () => $fetch(`${config.API_BASE}/search/?q=${route.query.q }&page=${route.query.page || 1}`), { server: false })
 </script>
