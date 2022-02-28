@@ -1,7 +1,7 @@
 <template>
 	<div class="container index">
 		<h1 class="display-1 mb-3">search.dn42</h1>
-		<p class="small">Search <span v-if="data">{{ data.index_size }}</span><span v-else>...</span> indexed documents on dn42 sites</p>
+		<p class="small">Search <span v-if="data">{{ data.index_size }}</span><span v-else>...</span> indexed pages and documents on DN42</p>
 
 		<div>
 			<SearchForm autofocus />
