@@ -153,6 +153,8 @@ class Crawler:
 		data = {
 			'id': url,
 			'url': url,
+			'hostname': up.hostname,
+			'domain': '.'.join(up.hostname.rsplit('.', maxsplit=2)[-2:]),
 			'mime': effective_content_type,
 			'size': size,
 			'server': response.headers.get('server'),
