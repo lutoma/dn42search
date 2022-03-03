@@ -160,6 +160,7 @@ class Crawler:
 			'server': response.headers.get('server'),
 
 			# Will be updated below if a better title is found
+			# FIXME Don't set this to avoid biasing ranking
 			'title': url.rsplit('/', maxsplit=1)[-1]
 		}
 

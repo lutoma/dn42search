@@ -12,27 +12,24 @@
 			<p class="small">Results {{ (page-1) * 15 + 1 }} to {{ Math.min((page-1) * 15 + 16, data.count) }} of {{ data.count }}</p>
 
 			<div class="results">
-				<div class="result" v-for="result of data.results">
-					<div class="small text-muted text-truncate"><a :href="result.url" rel="nofollow noopener" target="_blank" class="text-muted">{{ prettyPath(result.url) }}</a></div>
-					<!--<small class="text-muted"><a href="{{ result.url }}" rel="nofollow noopener" target="_blank" class="text-muted">{{ result.url }}</a> - Size: {{ result.size }} / Last indexed: {{ result.last_indexed }}</small>-->
-					<h5><a :href="result.url" rel="nofollow noopener" target="_blank">
-						<template v-if="result.title">{{ result.title }}</template>
-						<em v-else>No page title</em>
-					</a></h5>
-					<p class="excerpt" v-if="result.excerpt">{{ result.excerpt }}</p>
-				</div>
+				<SearchResult
+					v-for="result of data.results"
+					:key="result.url"
+					:result="result"
+					:query="query"
+					:more="'more' in data && result.domain in data.more && data.more[result.domain].numFound > 1 ? data.more[result.domain] : null" />
 			</div>
 
 			<nav v-if="data.pages > 1" aria-label="Search results pagination">
 				<ul class="pagination justify-content-center">
 					<li v-if="page != 1" class="page-item">
-						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: page-1 } }">Previous</router-link>
+						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: page-1, group_domains: group_domains } }">Previous</router-link>
 					</li>
 					<li v-for="(n, index) in data.pages" :key="index" :class="{ 'page-item': true, disabled: page == n }">
-						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: n } }">{{ n }}</router-link>
+						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: n, group_domains: group_domains } }">{{ n }}</router-link>
 					</li>
 					<li v-if="page < data.pages" class="page-item">
-						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: page+1 } }">Next</router-link>
+						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: page+1, group_domains: group_domains } }">Next</router-link>
 					</li>
 				</ul>
 			</nav>
@@ -42,30 +39,12 @@
 
 <script>
 import SearchForm from '~/components/SearchForm.vue'
+import SearchResult from '~/components/SearchResult.vue'
 
 export default {
 	components: {
-		SearchForm
-	},
-
-	data() {
-		return {
-			'data': [],
-			'page': 1
-		}
-	},
-
-	methods: {
-		prettyPath(_url) {
-			const url = new URL(_url)
-			let path = url.pathname.split('/').filter(n => n)
-			if(!path.length) {
-				return url.origin
-			} else {
-				path = path.map(decodeURI)
-				return `${url.origin} › ${path.join(' › ')}`
-			}
-		}
+		SearchForm,
+		SearchResult
 	},
 
 	created() {
@@ -74,9 +53,10 @@ export default {
 				this.data = null
 				this.page = Number(toQuery.page) || 1
 				this.query = toQuery.q
+				this.group_domains = toQuery.group_domains || true
 
 				const config = useRuntimeConfig()
-				$fetch(`${config.API_BASE}/search/?q=${toQuery.q}&page=${toQuery.page || 1}`).then((data) => {
+				$fetch(`${config.API_BASE}/search?q=${this.query}&page=${this.page}&group_domains=${this.group_domains}`).then((data) => {
 					this.data = data
 				})
 			}
@@ -86,6 +66,8 @@ export default {
 </script>
 
 <script setup>
+import { ref } from 'vue'
+
 const config = useRuntimeConfig()
 const route = useRoute()
 const router = useRouter()
@@ -96,10 +78,11 @@ if(route.query.q) {
 	useMeta({ title: `DN42 search` })
 }
 
-const query = ref(route.query.q || '')
-const page = ref(route.query.page ? Number(route.query.page) : 1)
+let query = ref(route.query.q || '')
+let page = ref(route.query.page ? Number(route.query.page) : 1)
+let group_domains = ref(route.query.group_domains || true)
 
-const { data } = await useAsyncData('searchResults', () => $fetch(`${config.API_BASE}/search/?q=${route.query.q }&page=${route.query.page || 1}`), { server: false })
+let { data } = await useAsyncData('searchResults', () => $fetch(`${config.API_BASE}/search?q=${route.query.q}&page=${route.query.page || 1}&group_domains=${route.query.group_domains || true}`), { server: false })
 </script>
 
 <style lang="scss">
@@ -125,19 +108,6 @@ const { data } = await useAsyncData('searchResults', () => $fetch(`${config.API_
 
 		.results {
 			 margin-top: 2rem;
-
-			 .result {
-			 	margin-bottom: 2rem;
-
-				h5 {
-					margin-top: .3rem;
-					margin-bottom: .3rem;
-				}
-
-				.excerpt {
-					font-size: 0.95rem;
-				}
-			}
 		}
 	}
 }
