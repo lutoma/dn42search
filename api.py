@@ -8,7 +8,7 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-	http_response = requests.get('http://search.dn42:8983/solr/dn42search/select', params={
+	http_response = requests.get('http://localhost:8983/solr/dn42search/select', params={
 		'q': '*:*',
 		'fl': '',
 		'rows': 0
@@ -17,14 +17,16 @@ def read_root():
 	return {'status': 'ok', 'index_size': data['response']['numFound']}
 
 
-@app.get("/search/")
-def read_search(q: str, page: Optional[int] = 1):
-		http_response = requests.get('http://search.dn42:8983/solr/dn42search/select', params={
+@app.get("/search")
+def read_search(q: str, page: Optional[int] = 1, fields: Optional[str] = 'url,title,excerpt'):
+		http_response = requests.get('http://localhost:8983/solr/dn42search/select', params={
 			'defType': 'edismax',
 			'q': q,
-			'fl': 'id,title,excerpt,url,size,last_indexed,mime',
+			'fl': fields,
+			'qf': 'hostname^8 url^3 title^5 excerpt^4 text^3 mime^0.5',
 			'rows': 15,
-			'start': (page - 1) * 15
+			'start': (page - 1) * 15,
+			'mm': '50%',
 		})
 
 		data = http_response.json()
