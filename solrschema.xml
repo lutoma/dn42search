@@ -17,12 +17,6 @@
     <field name="links" type="text_verbatim" indexed="true" stored="true" multiValued="true" />
     <field name="last_indexed" type="tdate" indexed="true" stored="true" default="NOW" multiValued="false" />
 
-    <field name="all" type="text_verbatim" indexed="true" stored="false" multiValued="true" />
-    <copyField source="url" dest="all" />
-    <copyField source="title" dest="all" />
-    <copyField source="excerpt" dest="all" />
-    <copyField source="text" dest="all" />
-
     <uniqueKey>id</uniqueKey>
 
     <fieldType name="size" class="solr.IntPointField" />

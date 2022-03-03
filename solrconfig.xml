@@ -65,9 +65,7 @@
     <lst name="defaults">
       <str name="echoParams">explicit</str>
       <int name="rows">15</int>
-
-      <!-- lutoma 2022-02-12 -->
-      <str name="df">all</str>
+      <str name="df">text</str>
     </lst>
   </requestHandler>
 
