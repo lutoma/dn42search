@@ -100,7 +100,11 @@ class Crawler:
 			self.robots_txt_map[robots_txt_url] = None
 			return None
 
-		rp = robots.RobotsParser.from_string(response.text)
+		try:
+			rp = robots.RobotsParser.from_string(response.text)
+		except Exception:
+			return None
+
 		self.robots_txt_map[robots_txt_url] = rp
 		return rp
 
@@ -179,7 +183,10 @@ class Crawler:
 				return
 
 			parser = MIME_PARSERS[effective_content_type]()
-			if not parser.parse(response.text):
+			try:
+				if not parser.parse(response.text):
+					return
+			except Exception:
 				return
 
 			absolute_links = []
