@@ -137,7 +137,8 @@ class Crawler:
 				skip_download = True
 		except (KeyError, ValueError):
 			print('  No or invalid content-length')
-			skip_download = True
+			# FIXME Check actual content length periodically during download
+			# skip_download = True
 			size = None
 
 		if 'content-type' not in response.headers:
