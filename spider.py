@@ -7,6 +7,7 @@ import robots
 import pysolr
 import redis
 import yaml
+import re
 from sdnotify import SystemdNotifier
 
 from parsers import MIME_PARSERS
@@ -23,6 +24,9 @@ class Crawler:
 	def __init__(self):
 		with open('config.yml') as fp:
 			self.config = yaml.safe_load(fp)
+
+		blacklist_res = self.config.get('blacklist_urls', [])
+		self.blacklist_urls = list(map(re.compile, blacklist_res))
 
 		self.sdnotify = SystemdNotifier()
 
@@ -58,7 +62,8 @@ class Crawler:
 		if up.scheme not in {'http', 'https'}:
 			return
 
-		if up.hostname in self.config.get('blacklist_domains', []):
+		if up.hostname in self.config.get('blacklist_domains', []) or \
+			any([r.match(url) for r in self.blacklist_urls]):
 			return
 
 		# FIXME Maybe add support for DN42 ip addresses later
@@ -103,7 +108,8 @@ class Crawler:
 		up = urlparse(url)
 
 		# Check again in case host was added to blacklist after URL was already queued
-		if up.hostname in self.config.get('blacklist_domains', []):
+		if up.hostname in self.config.get('blacklist_domains', []) or \
+			any([r.match(url) for r in self.blacklist_urls]):
 			return
 
 		print(f'Crawling {url}')

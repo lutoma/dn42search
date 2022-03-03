@@ -7,3 +7,4 @@ user_agent: 'some spider (+https://example.org)'
 max_response_size: 5242880
 recrawl_after: 86400
 blacklist_domains: []
+blacklist_urls: []
