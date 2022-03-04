@@ -82,12 +82,15 @@ class HTMLParser(BaseParser):
 			if desc_attr:
 				return desc_attr['content'][:500]
 
-		text = canola_extractor.get_content(self.data)
+		try:
+			text = canola_extractor.get_content(self.data)
 
-		if len(text) < 150:
-			# Retry with article extractor
-			text_article = article_extractor.get_content(self.data)
-			text = max(text, text_article, key=len)
+			if len(text) < 150:
+				# Retry with article extractor
+				text_article = article_extractor.get_content(self.data)
+				text = max(text, text_article, key=len)
+		except Exception:
+			return ''
 
 		return shorten(text, width=300, placeholder='…')
 
