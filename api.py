@@ -25,7 +25,7 @@ def read_search(q: str, page: Optional[int] = 1,
 		'defType': 'edismax',
 		'q': q,
 		'fl': fields,
-		'qf': 'hostname^8 url^3 title^5 excerpt^4 text^3 mime^0.5',
+		'qf': 'hostname^8 url^3 title^4 excerpt^3 text^3 mime^1',
 		'rows': 15,
 		'start': (page - 1) * 15,
 		'mm': '50%'
