@@ -19,7 +19,7 @@ def read_root():
 
 @app.get("/search")
 def read_search(q: str, page: Optional[int] = 1,
-	fields: Optional[str] = 'url,title,excerpt,domain', group_domains: Optional[bool] = True):
+	fields: Optional[str] = 'url,title,excerpt,hostname', group_hostnames: Optional[bool] = False):
 
 	params = {
 		'defType': 'edismax',
@@ -31,9 +31,9 @@ def read_search(q: str, page: Optional[int] = 1,
 		'mm': '50%'
 	}
 
-	if group_domains:
+	if group_hostnames:
 		params.update({
-			'fq': '{!collapse field=domain}',
+			'fq': '{!collapse field=hostname}',
 			'expand': 'true'
 		})
 

@@ -17,19 +17,19 @@
 					:key="result.url"
 					:result="result"
 					:query="query"
-					:more="'more' in data && result.domain in data.more && data.more[result.domain].numFound > 1 ? data.more[result.domain] : null" />
+					:more="'more' in data && result.hostname in data.more && data.more[result.hostname].numFound > 1 ? data.more[result.hostname] : null" />
 			</div>
 
 			<nav v-if="data.pages > 1" aria-label="Search results pagination">
 				<ul class="pagination justify-content-center">
 					<li v-if="page != 1" class="page-item">
-						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: page-1, group_domains: group_domains } }">Previous</router-link>
+						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: page-1, group_hostnames: group_hostnames } }">Previous</router-link>
 					</li>
 					<li v-for="(n, index) in data.pages" :key="index" :class="{ 'page-item': true, disabled: page == n }">
-						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: n, group_domains: group_domains } }">{{ n }}</router-link>
+						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: n, group_hostnames: group_hostnames } }">{{ n }}</router-link>
 					</li>
 					<li v-if="page < data.pages" class="page-item">
-						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: page+1, group_domains: group_domains } }">Next</router-link>
+						<router-link class="page-link" :to="{ path: '/search', query: { q: query, page: page+1, group_hostnames: group_hostnames } }">Next</router-link>
 					</li>
 				</ul>
 			</nav>
@@ -53,10 +53,10 @@ export default {
 				this.data = null
 				this.page = Number(toQuery.page) || 1
 				this.query = toQuery.q
-				this.group_domains = toQuery.group_domains || true
+				this.group_hostnames = toQuery.group_hostnames || true
 
 				const config = useRuntimeConfig()
-				$fetch(`${config.API_BASE}/search?q=${this.query}&page=${this.page}&group_domains=${this.group_domains}`).then((data) => {
+				$fetch(`${config.API_BASE}/search?q=${this.query}&page=${this.page}&group_hostnames=${this.group_hostnames}`).then((data) => {
 					this.data = data
 				})
 			}
@@ -80,9 +80,9 @@ if(route.query.q) {
 
 let query = ref(route.query.q || '')
 let page = ref(route.query.page ? Number(route.query.page) : 1)
-let group_domains = ref(route.query.group_domains || true)
+let group_hostnames = ref(route.query.group_hostnames || true)
 
-let { data } = await useAsyncData('searchResults', () => $fetch(`${config.API_BASE}/search?q=${route.query.q}&page=${route.query.page || 1}&group_domains=${route.query.group_domains || true}`), { server: false })
+let { data } = await useAsyncData('searchResults', () => $fetch(`${config.API_BASE}/search?q=${route.query.q}&page=${route.query.page || 1}&group_hostnames=${route.query.group_hostnames || true}`), { server: false })
 </script>
 
 <style lang="scss">

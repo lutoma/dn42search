@@ -16,7 +16,7 @@
 			</p>
 
 			<p v-if="more.numFound > more.docs.length" class="small">
-				<router-link :to="{ path: '/search', query: {q: `${query} AND domain:${result.domain}`, group_domains: false } }">Show all {{ more.numFound }} results from {{ result.domain }}</router-link>
+				<router-link :to="{ path: '/search', query: {q: `${query} AND hostname:${result.hostname}`, group_hostnames: false } }">Show all {{ more.numFound }} results from {{ result.hostname }}</router-link>
 			</p>
 		</div>
 	</div>
